@@ -11,13 +11,18 @@ enum UnknowEdge: String {
     case Altitude, Base, Hypotenuse
 }
 
+struct History: Codable {
+    var base: String
+    var altitude: String
+    var hypotenuse: String
+    var area: String
+    var perimeter: String
+}
+
 struct CalculationView: View {
-    
-    @AppStorage("altitude") var altitudeHistory: String = ""
-    @AppStorage("base") var baseHistory: String = ""
-    @AppStorage("hypotenuse") var hypotenuseHistory: String = ""
-    @AppStorage("perimeter") var perimeterHistory: String = ""
-    @AppStorage("area") var areaHistory: String = ""
+    let decoder = JSONDecoder()
+    let encoder = JSONEncoder()
+    @AppStorage("calculation_history") var calculateHistory: Data = Data()
     
     @State var altitude: String = ""
     @State var base: String = ""
@@ -28,12 +33,19 @@ struct CalculationView: View {
     @State var calculatedEdge: String = ""
     @State var unknowEdge: UnknowEdge = .Altitude
     
-    init() {
-        altitude = altitudeHistory
-        base = baseHistory
-        hypotenuse = hypotenuseHistory
-        perimeter = perimeterHistory
-        area = areaHistory
+    func updateCalcHistory() {
+        do {
+            print("[CalculateView] - LOG: Initializing to decode values")
+            let history = try decoder.decode(History.self, from: calculateHistory)
+            print("[CalculateView] - LOG: Decoded values \(history)")
+            altitude = history.altitude
+            base = history.base
+            hypotenuse = history.hypotenuse
+            perimeter = history.perimeter
+            area = history.area
+        } catch {
+            print("[CalculateView] - Unable decode the data from app storage")
+        }
     }
     
     func didPickerUpdate() -> [UnknowEdge] {
@@ -48,11 +60,11 @@ struct CalculationView: View {
     }
     
     func setValuesToHistory(altitude: String, base: String, hypotenuse: String, area: String, perimeter: String) {
-        altitudeHistory = altitude
-        baseHistory = base
-        hypotenuseHistory = hypotenuse
-        perimeterHistory = perimeter
-        areaHistory = area
+        do {
+            calculateHistory = try encoder.encode(History(base: base, altitude: altitude, hypotenuse: hypotenuse, area: area, perimeter: perimeter))
+        } catch {
+            print("[CalculateView] - Unable decode the struct to data")
+        }
     }
     
     func calcualteValue() {
@@ -179,6 +191,9 @@ struct CalculationView: View {
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationTitle("Triangle Calculator")
+            .onAppear {
+                updateCalcHistory()
+            }
         }
     }
 }

@@ -8,11 +8,28 @@
 import SwiftUI
 
 struct HistoryView: View {
-    @AppStorage("altitude") var altitude: String = ""
-    @AppStorage("base") var base: String = ""
-    @AppStorage("hypotenuse") var hypotenuse: String = ""
-    @AppStorage("area") var area: String = ""
-    @AppStorage("perimeter") var perimeter: String = ""
+    let decoder = JSONDecoder()
+    let encoder = JSONEncoder()
+    @AppStorage("calculation_history") var calculateHistory: Data = Data()
+    
+    @State var altitude: String = ""
+    @State var base: String = ""
+    @State var hypotenuse: String = ""
+    @State var area: String = ""
+    @State var perimeter: String = ""
+    
+    func updateCalcHistory() {
+        do {
+            let history = try decoder.decode(History.self, from: calculateHistory)
+            self.altitude = history.altitude
+            self.base = history.base
+            self.hypotenuse = history.hypotenuse
+            self.perimeter = history.perimeter
+            self.area = history.area
+        } catch {
+            print("[HistoryView] - ERROR: Unable to decode the values from app storage")
+        }
+    }
     
     var body: some View {
         NavigationView {
@@ -59,6 +76,9 @@ struct HistoryView: View {
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationTitle("Last Calculation")
+            .onAppear {
+                updateCalcHistory()
+            }
         }
     }
 }

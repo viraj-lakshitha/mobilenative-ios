@@ -7,15 +7,9 @@
 
 import SwiftUI
 
-struct History {
-    var base: String
-    var altitude: String
-    var hypotenuse: String
-    var area: String
-    var perimeter: String
-}
-
 struct ContentView: View {
+    @AppStorage("calculation_history") var calculateHistory: Data = Data()
+    
     var body: some View {
         TabView {
             CalculationView().tabItem {
